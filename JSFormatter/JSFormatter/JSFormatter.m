@@ -73,71 +73,34 @@ typedef NS_ENUM(NSInteger, JSFormatterFileType) {
 }
 
 + (BOOL)formatDocument:(IDESourceCodeDocument *)document {
+    if (document == nil) {
+        return NO;
+    }
     DVTSourceTextStorage *textStorage = [document textStorage];
+    NSLog(@"%s, %@", __func__, textStorage);
+    if (textStorage.string == nil) {
+        return NO;
+    }
+
     NSString *originalString = [NSString stringWithString:textStorage.string];
 
     if (textStorage.string.length > 0) {
         
-        NSArray *types = @[@"js",@"html",@"css",@"json",@"htm"];
-        if ([types indexOfObject:document.fileURL.pathExtension] == NSNotFound) {
-            //not support other file types
-            NSAlert *alert = [[NSAlert alloc] init];
-            [alert setMessageText:@"Only support js\\html\\htm\\css\\json now"];
-            [alert runModal];
-            return NO;
-        }
-        
-        NSString *formattedCode = [self formattedCodeOfString:textStorage.string pathExtension:document.fileURL.pathExtension];
-
-        if (formattedCode) {
-            [textStorage beginEditing];
-
-            if (![formattedCode isEqualToString:textStorage.string]) {
-                [textStorage replaceCharactersInRange:NSMakeRange(0, textStorage.string.length) withString:formattedCode withUndoManager:[document undoManager]];
-            }
-
-            [textStorage endEditing];
-        }
+//        NSString *formattedCode = [self formattedCodeOfString:textStorage.string pathExtension:document.fileURL.pathExtension];
+//
+//        if (formattedCode) {
+//            [textStorage beginEditing];
+//
+//            if (![formattedCode isEqualToString:textStorage.string]) {
+//                [textStorage replaceCharactersInRange:NSMakeRange(0, textStorage.string.length) withString:formattedCode withUndoManager:[document undoManager]];
+//            }
+//
+//            [textStorage endEditing];
+//        }
     }
 
     BOOL codeHasChanged = (originalString && ![originalString isEqualToString:textStorage.string]);
     return codeHasChanged;
-}
-
-+ (NSString *)formattedCodeOfString:(NSString *)string pathExtension:(NSString *)pathExtension {
-    NSString *path = @"/tmp/out.tmp.$$";
-    [string writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
-
-    //1
-    NSTask *task = [[NSTask alloc] init];
-
-    //2
-    task.launchPath = @"/usr/local/bin/node";
-
-    //init output pipe
-    NSPipe *outputPipe = [NSPipe pipe];
-    [task setStandardOutput:outputPipe];
-
-    //3
-    if ([pathExtension isEqualToString:@"json"]) {
-        pathExtension = @"js";
-    }
-    NSString *command = [NSString stringWithFormat:@"/usr/local/bin/%@-beautify",pathExtension];
-    task.arguments = @[command, path];
-
-    //4
-    [task launch];
-
-    //5
-    [task waitUntilExit];
-
-    NSFileHandle *read = [outputPipe fileHandleForReading];
-    NSData *dataRead = [read readDataToEndOfFile];
-    NSString *stringRead = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
-    NSLog(@"output: %@", stringRead);
-
-
-    return stringRead;
 }
 
 - (void)dealloc {

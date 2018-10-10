@@ -94,6 +94,8 @@
 
 @interface IDESourceCodeEditor : NSObject
 @property (retain) NSTextView *textView;
+    @property (retain) id currentSelectedDocumentLocations;
+@property (retain) NSString *selectedText;
 - (IDESourceCodeDocument *)sourceCodeDocument;
 @end
 
