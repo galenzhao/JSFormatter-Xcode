@@ -1,3 +1,6 @@
+ONLY WORKS with Xcode 10!!!!!
+-----------------------------------------------------------
+
 # No longer maintained
 
 # JSFormatter-Xcode
